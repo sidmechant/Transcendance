@@ -1,0 +1,125 @@
+// Générateur de Prisma Client
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "debian-openssl-3.0.x", "debian-openssl-1.1.x"]
+}
+
+// Configuration de la source de données PostgreSQL
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  STUDENT
+  ADMIN
+}
+
+enum UserStatus {
+  ONLINE
+  OFFLINE
+  IN_GAME
+}
+
+enum ChannelRole {
+  MEMBER
+  ADMIN
+}
+
+// Modèle pour représenter les utilisateurs
+model User {
+  id                           Int                        @id @unique
+  createdAt                    DateTime                   @default(now())
+  updatedAt                    DateTime                   @default(now())
+  username                     String                     @unique
+  displayname                  String                     @unique
+  role                         Role
+  lastname                     String
+  firstname                    String
+  profileurl                   String
+  emails                       String                     @unique
+  phoneNumbers                 String?
+  photourl                     String                   
+  twoFactorAuthenticationSecret String?
+  isTwoFactorAuthenticationEnabled Boolean               @default(false)
+  ownedChannels                Channel[]
+  channels                     ChannelMembership[]
+  messages                     Message[]
+  player                       Player?
+  urlPhotoProfile              String?
+  sessionId                    String?                    @unique
+  isProfileUpdated             Boolean                    @default(false)
+  status UserStatus @default(OFFLINE)
+  requestedFriends  Friend[] @relation("userFriends")
+  receivedRequests  Friend[] @relation("friendRequests")
+}
+
+model Match {
+  id        Int      @id @default(autoincrement())
+  playerAId Int
+  playerBId Int
+  scoreA    Int      @default(0)
+  scoreB    Int      @default(0)
+  playedAt  DateTime @default(now())
+  playerA   Player   @relation("PlayerAMatches", fields: [playerAId], references: [id])
+  playerB   Player   @relation("PlayerBMatches", fields: [playerBId], references: [id])
+}
+
+model Player {
+  id             Int      @id @unique
+  pseudo         String?
+  urlPhotoProfile String?
+  matchesA       Match[]  @relation("PlayerAMatches")
+  matchesB       Match[]  @relation("PlayerBMatches")
+  userId         Int      @unique
+  user           User     @relation(fields: [userId], references: [id])
+}
+
+model Friend {
+  id        Int @id @default(autoincrement())
+  userId    Int
+  friendId  Int
+  status    String // "requested", "accepted", "declined", "blocked", etc.
+  user      User @relation("userFriends", fields: [userId], references: [id])
+  friend    User @relation("friendRequests", fields: [friendId], references: [id])
+}
+
+
+// Modèle pour représenter les canaux de chat
+model Channel {
+  id        String    @id @default(uuid())
+  name      String    @unique
+  type      String
+  password  String?
+  createdAt DateTime  @default(now())
+  ownerId   Int
+  owner     User      @relation(fields: [ownerId], references: [id])
+  messages  Message[]
+  members   ChannelMembership[]
+}
+
+// Modèle pour représenter les messages dans un canal de chat
+model Message {
+  id        String    @id @default(uuid())
+  content   String
+  createdAt DateTime  @default(now())
+  channelId String
+  channel   Channel   @relation(fields: [channelId], references: [id])
+  userId    Int
+  user      User      @relation(fields: [userId], references: [id])
+
+}
+
+// Table de jonction pour la relation plusieurs à plusieurs entre User et Channel
+model ChannelMembership {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  channelId String
+  user      User     @relation(fields: [userId], references: [id])
+  channel   Channel  @relation(fields: [channelId], references: [id])
+  isAdmin   Boolean   @default(false)
+  isBanned  Boolean   @default(false)
+  mutedUntil DateTime?  // null signifie que l'utilisateur n'est pas en sourdine
+  role      ChannelRole  @default(MEMBER)
+}

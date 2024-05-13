@@ -1,0 +1,21 @@
+FROM node:16
+
+WORKDIR /app
+
+COPY package*.json ./
+
+RUN npm install && \
+    npm install -g @nestjs/cli && \
+    npm install --save @nestjs/passport passport passport-local @types/passport-local \
+    passport-google-oauth20 otplib @nestjs/jwt passport-jwt @nestjs/config @nestjs/common \
+    qrcode prisma express @prisma/client --save-dev
+
+# .dockerignore doit exclure node_modules, .git, et autres fichiers non nécessaires
+COPY . .
+
+RUN npx prisma generate 
+EXPOSE 3000
+
+# Démarrez l'application
+CMD [ "npm", "run", "start:dev" ]
+# ENTRYPOINT ["tail", "-f", "/dev/null"]

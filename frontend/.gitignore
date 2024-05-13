@@ -1,0 +1,23 @@
+# Fichiers système
+.DS_Store
+Thumbs.db
+
+# Fichiers de build et de dépendances
+/node_modules
+/dist
+/build
+package-lock.json
+1
+2
+3
+
+# Fichiers d'environnement
+.env
+
+# Fichiers de log
+*.log
+
+# Autres fichiers et dossiers à ignorer
+.idea/
+.vscode/
+

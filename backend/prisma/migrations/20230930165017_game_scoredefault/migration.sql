@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "Match" ALTER COLUMN "scoreA" SET DEFAULT 0,
+ALTER COLUMN "scoreB" SET DEFAULT 0;

@@ -1,0 +1,49 @@
+version: '3.3'
+
+networks:
+  net-db:
+    driver: bridge
+  net-app:
+    driver: bridge
+
+services:
+
+  backend:
+    container_name: nestjs-app
+    image: nestjs-app
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    env_file:
+      - ./backend/.env
+    ports:
+      - 3000:3000
+      - 5555:5555
+    networks:
+      - net-db
+      - net-app
+    volumes:
+      - ./backend:/usr/src/app
+      - /usr/src/app/node_modules
+    restart: unless-stopped
+
+  frontend:
+    container_name: frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "5173:5173"
+      - "5174:5174" #a enlever ?
+      - "5175:5175" #a enlever ?
+      - "5176:5176" #a enlever ?
+    volumes:
+      - ./frontend:/usr/src/app
+      - /usr/src/app/node_modules
+    networks:
+       - net-app
+    restart: unless-stopped
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+    depends_on:
+       - backend

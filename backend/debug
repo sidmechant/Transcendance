@@ -1,0 +1,49 @@
+import { Module } from '@nestjs/common';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
+import { AuthModule } from './auth/auth.module';
+import { PrismaModule } from '../prisma/prisma.module'
+import { CrudModule } from './crud/crud.module'; // Importez CrudModule
+
+@Module({
+  imports: [AuthModule, PrismaModule, CrudModule],
+  controllers: [AppController],
+  providers: [AppService],
+})
+export class AppModule {}
+import { Module } from '@nestjs/common';
+import { CrudService } from './crud.service';
+import { PrismaModule } from '../../prisma/prisma.module'
+
+@Module({
+  imports: [PrismaModule],
+  providers: [CrudService],
+  exports: [CrudService], // Assurez-vous d'exporter le service
+})
+export class CrudModule {}
+import { Module } from '@nestjs/common';
+import { AuthService } from './auth.service';
+import { AuthController } from './auth.controller';
+import { FortyTwoapiModule } from './forty-twoapi/forty-twoapi.module';
+import { Prisma } from '@prisma/client';
+
+@Module({
+  providers: [AuthService],
+  controllers: [AuthController],
+  imports: [FortyTwoapiModule]
+})
+export class AuthModule {}
+import { HttpModule } from "@nestjs/axios";
+import { Module } from '@nestjs/common';
+import { FortyTwoApiService } from './forty-twoapi.service';
+import { FortyTwoApiController } from './forty-twoapi.controller';
+import { CrudService } from '../../crud/crud.service'
+import { CrudModule } from '../../crud/crud.module';// Importez CrudModule
+
+
+@Module({
+  imports: [HttpModule, CrudModule],
+  providers: [FortyTwoApiService],
+  controllers: [FortyTwoApiController]
+})
+export class FortyTwoapiModule {}
